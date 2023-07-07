@@ -1,0 +1,25 @@
+{
+  "name": "expense-mate",
+  "version": "1.0.0",
+  "description": "The ultimate expense tracker for mates",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JeelPatel2000/expense-mate.git"
+  },
+  "keywords": [
+    "slipt",
+    "wise",
+    "expense",
+    "mate"
+  ],
+  "author": "Jeel Patel",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/JeelPatel2000/expense-mate/issues"
+  },
+  "homepage": "https://github.com/JeelPatel2000/expense-mate#readme"
+}
