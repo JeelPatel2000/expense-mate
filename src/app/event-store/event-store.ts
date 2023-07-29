@@ -61,3 +61,15 @@ export const inMemoryEventStore = (): EventStore => {
     readStream
   }
 }
+
+export const postgresEventStore = (): EventStore => {
+  const appendStreams = async (streams: StreamEvents[]) => {}
+  const readStream = async (streamId: string, streamType: StreamType): Promise<Array<PersistedEventEnvelope<any>>> => { return [] }
+
+  return {
+    append: async(streamType: StreamType, streamId: string, expectedVersion: number, events: EventEnvelope[]) => 
+      appendStreams([{ streamType, streamId, expectedVersion, events}]),
+    appendStreams,
+    readStream
+  }
+}
