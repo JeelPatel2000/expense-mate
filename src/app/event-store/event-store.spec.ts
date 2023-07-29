@@ -36,5 +36,10 @@ describe('Event store tests', () => {
   describe('In memory eventstore test', eventStoreTest(inMemoryEventStore(() => now), now))
 
   const pool = getTestDBPool()
-  describe(`Postgres eventstore test`, eventStoreTest(postgresEventStore(pool), now))
+  const teardown = async () => {
+    const sql = `DELETE FROM eventstore`
+    await pool.query(sql);
+    await pool.end();
+  }
+  describe(`Postgres eventstore test`, eventStoreTest(postgresEventStore(pool), now, teardown))
 })
