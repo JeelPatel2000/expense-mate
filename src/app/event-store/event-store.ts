@@ -14,7 +14,7 @@ export interface EventStore {
 }
 
 export const inMemoryEventStore = (): EventStore => {
-  const eventStream: PersistedEventEnvelope<any>[] = []
+  const eventsStream: PersistedEventEnvelope<any>[] = []
   const versions: { [key: string]: number } = {}
 
   const getVersion = (streamType: StreamType, streamId: string) => versions[`${streamType}-${streamId}`] || 0
@@ -36,7 +36,7 @@ export const inMemoryEventStore = (): EventStore => {
     streams.forEach(({ events, streamId, streamType }) => {
       increamentVersion(streamType, streamId)
       events.forEach((event, index) => {
-        eventStream.push({
+        eventsStream.push({
           eventType: event.eventType,
           metadata: event.metadata,
           payload: event.payload,
@@ -51,8 +51,7 @@ export const inMemoryEventStore = (): EventStore => {
   }
 
   const readStream = async (streamId: string, streamType: StreamType): Promise<Array<PersistedEventEnvelope<any>>>  => {
-    const result: Array<PersistedEventEnvelope<any>> = []
-    return result
+    return eventsStream.filter(event => event.streamId === streamId && event.streamType === streamType) 
   }
 
   return {
