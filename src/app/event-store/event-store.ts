@@ -1,4 +1,4 @@
-import { selectVersionsSqlQuery } from "./helpers";
+import { insertRowsSqlQuery, selectVersionsSqlQuery } from "./helpers";
 import { EventEnvelope, PersistedEventEnvelope, StreamType } from "./types";
 import { Pool } from "pg";
 
@@ -65,7 +65,7 @@ export const inMemoryEventStore = (now: () => Date = () => new Date()): EventSto
   }
 }
 
-export const postgresEventStore = (pool: Pool): EventStore => {
+export const postgresEventStore = (pool: Pool, now: () => Date = () => new Date()): EventStore => {
 
   const versionKey = (streamType: StreamType, streamId: string) => `${streamType}-${streamId}`
 
@@ -85,9 +85,19 @@ export const postgresEventStore = (pool: Pool): EventStore => {
 
 
   const appendStreams = async (streams: StreamEvents[]) => {
-
+    await checkVersion(streams)
+    const { sql, values } = insertRowsSqlQuery(streams, now)
+    try {
+      await pool.query('BEGIN')
+      await pool.query(sql, values)
+      await pool.query('COMMIT')
+    }
+    catch(e){
+      console.log(e, 'Database error while inserting rows')
+      await pool.query('ROLLBACK')
+    }
   }
-  
+
   const readStream = async (streamId: string, streamType: StreamType): Promise<Array<PersistedEventEnvelope<any>>> => { return [] }
 
   return {
