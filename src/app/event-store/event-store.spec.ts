@@ -14,10 +14,19 @@ const eventStoreTest = (eventStore: EventStore, timestamp: Date, teardown?: () =
     expect(events).toEqual([])
   })
 
-  it(`given an event > when append event > then appends event`, async () => {
+  it(`given events > when append event > then appends event`, async () => {
     await eventStore.append(StreamType.Expense, `stream1`, 0, [{ eventType: 'Created', metadata: {}, payload: { eventType: `Created` } }])
+    await eventStore.append(StreamType.Expense, `stream2`, 0, [{ eventType: 'Created', metadata: {}, payload: { eventType: `Created` } }])
+    await eventStore.append(StreamType.Expense, `stream2`, 1, [{ eventType: 'Updated', metadata: {}, payload: { eventType: `Updated` } }])
+    
+    
     expect(await eventStore.readStream(`stream1`, StreamType.Expense)).
       toEqual([{ eventType: 'Created', metadata: {}, payload: { eventType: `Created` }, position: `1`, streamId: `stream1`, streamType: StreamType.Expense, timestamp, version: 1 }])
+    expect(await eventStore.readStream(`stream2`, StreamType.Expense)).
+      toEqual([
+        { eventType: 'Created', metadata: {}, payload: { eventType: `Created` }, position: `2`, streamId: `stream2`, streamType: StreamType.Expense, timestamp, version: 1 },
+        { eventType: 'Updated', metadata: {}, payload: { eventType: `Updated` }, position: `3`, streamId: `stream2`, streamType: StreamType.Expense, timestamp, version: 2 },
+      ])
   })
 }
 
