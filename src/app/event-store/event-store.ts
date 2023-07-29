@@ -15,7 +15,7 @@ export interface EventStore {
   readStream: <T>(streamId: string, streamType: StreamType) => Promise<Array<PersistedEventEnvelope<T>>>
 }
 
-export const inMemoryEventStore = (): EventStore => {
+export const inMemoryEventStore = (now: () => Date = () => new Date()): EventStore => {
   const eventsStream: PersistedEventEnvelope<any>[] = []
   const versions: { [key: string]: number } = {}
 
@@ -42,10 +42,10 @@ export const inMemoryEventStore = (): EventStore => {
           eventType: event.eventType,
           metadata: event.metadata,
           payload: event.payload,
-          position: `${streamType}-${streamId}-${index}`,
+          position: (eventsStream.length + 1).toString(),
           streamId,
           streamType,
-          timestamp: new Date(),
+          timestamp: now(),
           version: getVersion(streamType, streamId)
         })
       })
