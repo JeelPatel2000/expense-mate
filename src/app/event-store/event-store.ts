@@ -14,13 +14,40 @@ export interface EventStore {
 }
 
 export const inMemoryEventStore = (): EventStore => {
+  const eventStream: PersistedEventEnvelope<any>[] = []
+  const versions: { [key: string]: number } = {}
 
-  const append = async (streamType: StreamType, streamId: string, expectedVersion: number, events: EventEnvelope[]) => {
-    return
+  const getVersion = (streamType: StreamType, streamId: string) => versions[`${streamType}-${streamId}`] || 0
+
+  const increamentVersion = (streamType: StreamType, streamId: string): void => {
+    versions[`${streamType}-${streamId}`] = getVersion(streamType, streamId) + 1
+  }
+
+  const versionCheck = (streams: StreamEvents[]): void => {
+    streams.forEach(({ events, expectedVersion, streamId, streamType}) => {
+      const version = getVersion(streamType, streamId)
+      if(version !== expectedVersion)
+        throw new Error(`Version mismatch for stream ${streamType}-${streamId}. Expected ${expectedVersion} but was ${version}`)
+    })
   }
 
   const appendStreams = async (streams: StreamEvents[]) => {
-    return
+    versionCheck(streams)
+    streams.forEach(({ events, streamId, streamType }) => {
+      increamentVersion(streamType, streamId)
+      events.forEach((event, index) => {
+        eventStream.push({
+          eventType: event.eventType,
+          metadata: event.metadata,
+          payload: event.payload,
+          position: `${streamType}-${streamId}-${index}`,
+          streamId,
+          streamType,
+          timestamp: new Date(),
+          version: getVersion(streamType, streamId)
+        })
+      })
+    })
   }
 
   const readStream = async (streamId: string, streamType: StreamType): Promise<Array<PersistedEventEnvelope<any>>>  => {
@@ -28,9 +55,9 @@ export const inMemoryEventStore = (): EventStore => {
     return result
   }
 
-
   return {
-    append,
+    append: async(streamType: StreamType, streamId: string, expectedVersion: number, events: EventEnvelope[]) => 
+      appendStreams([{ streamType, streamId, expectedVersion, events}]),
     appendStreams,
     readStream
   }
