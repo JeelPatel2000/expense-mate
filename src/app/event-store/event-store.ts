@@ -1,4 +1,6 @@
 import { EventEnvelope, PersistedEventEnvelope, StreamType } from "./types";
+import { Pool } from "pg";
+
 
 export interface StreamEvents {
   streamType: StreamType
@@ -62,7 +64,7 @@ export const inMemoryEventStore = (): EventStore => {
   }
 }
 
-export const postgresEventStore = (): EventStore => {
+export const postgresEventStore = (pool: Pool): EventStore => {
   const appendStreams = async (streams: StreamEvents[]) => {}
   const readStream = async (streamId: string, streamType: StreamType): Promise<Array<PersistedEventEnvelope<any>>> => { return [] }
 
