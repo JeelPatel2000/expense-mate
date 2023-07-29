@@ -1,3 +1,4 @@
+import { selectVersionsSqlQuery } from "./helpers";
 import { EventEnvelope, PersistedEventEnvelope, StreamType } from "./types";
 import { Pool } from "pg";
 
@@ -37,7 +38,7 @@ export const inMemoryEventStore = (now: () => Date = () => new Date()): EventSto
     versionCheck(streams)
     streams.forEach(({ events, streamId, streamType }) => {
       increamentVersion(streamType, streamId)
-      events.forEach((event, index) => {
+      events.forEach((event) => {
         eventsStream.push({
           eventType: event.eventType,
           metadata: event.metadata,
@@ -65,7 +66,28 @@ export const inMemoryEventStore = (now: () => Date = () => new Date()): EventSto
 }
 
 export const postgresEventStore = (pool: Pool): EventStore => {
-  const appendStreams = async (streams: StreamEvents[]) => {}
+
+  const versionKey = (streamType: StreamType, streamId: string) => `${streamType}-${streamId}`
+
+  const checkVersion = async (streams: StreamEvents[]) => {
+    const { sql, values } =  selectVersionsSqlQuery(streams)
+    const { rows } = await pool.query<{ stream_type: StreamType, stream_id: string, version: number}>(sql, values);
+    const versions: Map<string, number> = new Map();
+    rows.forEach(row => {
+      versions.set(versionKey(row.stream_type, row.stream_id), row.version)
+    });
+    streams.forEach(({streamId, streamType, expectedVersion}) => {
+      const version = versions.get(versionKey(streamType, streamId))
+      if(expectedVersion !== version) 
+        throw new Error(`Version mismatch for stream ${streamType}-${streamId}. Expected ${expectedVersion} but was ${version}`)
+    })
+  }
+
+
+  const appendStreams = async (streams: StreamEvents[]) => {
+
+  }
+  
   const readStream = async (streamId: string, streamType: StreamType): Promise<Array<PersistedEventEnvelope<any>>> => { return [] }
 
   return {
