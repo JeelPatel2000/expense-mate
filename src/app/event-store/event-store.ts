@@ -104,7 +104,6 @@ export const postgresEventStore = (pool: Pool, now: () => Date = () => new Date(
   }
 
   const mapRows = <T>(rows: any[]): Array<PersistedEventEnvelope<T>> => rows.map(row => {
-    console.log(row.timestamp)
     return {
       position: row.position,
       streamType: row.stream_type,

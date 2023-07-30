@@ -41,5 +41,5 @@ describe('Event store tests', () => {
     await pool.query(sql);
     await pool.end();
   }
-  describe(`Postgres eventstore test`, eventStoreTest(postgresEventStore(pool), now, teardown))
+  describe(`Postgres eventstore test`, eventStoreTest(postgresEventStore(pool, () => now), now, teardown))
 })
