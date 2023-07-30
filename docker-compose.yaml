@@ -1,0 +1,38 @@
+version: '3'
+services:
+  db:
+    image: postgres:latest
+    container_name: my_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: expense_mate
+    ports:
+      - "5432:5432"
+    # volumes:
+    #   - pgdata:/var/lib/postgresql/data
+
+  flyway:
+    image: flyway/flyway
+    command: -url=jdbc:postgresql://db:5432/expense_mate -user=postgres -password=postgres migrate
+    depends_on:
+      - db
+    volumes:
+      - ./flyway/migrations:/flyway/sql
+
+  pgweb:
+    container_name: pgweb
+    restart: always
+    image: sosedoff/pgweb
+    ports: 
+      - "8081:8081" 
+    links: 
+      - db:db
+    environment:
+      - DATABASE_URL=postgres://postgres:postgres@db:5432/postgres?sslmode=disable
+    depends_on:
+      - db
+
+volumes:
+  pgdata:
