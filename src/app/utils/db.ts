@@ -6,7 +6,7 @@ export const getTestDBPool = () => {
         port: 5432,
         user: `postgres`,
         password: `postgres`,
-        database: `expense-mate`
+        database: `expense_mate`
     })
 }
 
