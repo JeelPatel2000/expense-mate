@@ -1,7 +1,6 @@
-import { insertRowsSqlQuery, selectVersionsSqlQuery } from "./helpers";
+import { insertRowsSqlQuery, readStreamSqlQuery, selectVersionsSqlQuery } from "./helpers";
 import { EventEnvelope, PersistedEventEnvelope, StreamType } from "./types";
 import { Pool } from "pg";
-
 
 export interface StreamEvents {
   streamType: StreamType
@@ -77,7 +76,7 @@ export const postgresEventStore = (pool: Pool, now: () => Date = () => new Date(
       versions.set(versionKey(row.stream_type, row.stream_id), row.version)
     });
     streams.forEach(({streamId, streamType, expectedVersion}) => {
-      const version = versions.get(versionKey(streamType, streamId))
+      const version = versions.get(versionKey(streamType, streamId)) ?? 0
       if(expectedVersion !== version) 
         throw new Error(`Version mismatch for stream ${streamType}-${streamId}. Expected ${expectedVersion} but was ${version}`)
     })
@@ -86,7 +85,7 @@ export const postgresEventStore = (pool: Pool, now: () => Date = () => new Date(
 
   const appendStreams = async (streams: StreamEvents[]) => {
     await checkVersion(streams)
-    const { sql, values } = insertRowsSqlQuery(streams, now)
+    const { sql, values } = insertRowsSqlQuery(streams, now())
     try {
       await pool.query('BEGIN')
       await pool.query(sql, values)
@@ -98,8 +97,26 @@ export const postgresEventStore = (pool: Pool, now: () => Date = () => new Date(
     }
   }
 
-  const readStream = async (streamId: string, streamType: StreamType): Promise<Array<PersistedEventEnvelope<any>>> => { return [] }
+  const readStream = async (streamId: string, streamType: StreamType): Promise<Array<PersistedEventEnvelope<any>>> => {
+    const { sql } = readStreamSqlQuery(streamId, streamType);
+    const { rows } = await pool.query(sql);
+    return mapRows(rows)
+  }
 
+  const mapRows = <T>(rows: any[]): Array<PersistedEventEnvelope<T>> => rows.map(row => {
+    console.log(row.timestamp)
+    return {
+      position: row.position,
+      streamType: row.stream_type,
+      streamId: row.stream_id,
+      version: row.version,
+      eventType: row.event_type,
+      payload: row.payload,
+      metadata: row.metadata,
+      timestamp: row.timestamp
+    }
+  })
+  
   return {
     append: async(streamType: StreamType, streamId: string, expectedVersion: number, events: EventEnvelope[]) => 
       appendStreams([{ streamType, streamId, expectedVersion, events}]),
