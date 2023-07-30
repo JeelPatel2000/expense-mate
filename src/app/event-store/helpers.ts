@@ -1,4 +1,5 @@
 import { StreamEvents } from "./event-store"
+import { StreamType } from "./types";
 
 export const selectVersionsSqlQuery = (streams: StreamEvents[]): { sql: string, values: any[]} => {
   const whereClauses: Array<string> = []
@@ -16,7 +17,7 @@ export const selectVersionsSqlQuery = (streams: StreamEvents[]): { sql: string, 
   }
 }
 
-export const insertRowsSqlQuery = (streams: StreamEvents[], now: () => Date): { sql: string, values: any[] } => {
+export const insertRowsSqlQuery = (streams: StreamEvents[], now: Date): { sql: string, values: any[] } => {
   const valueRows: Array<string> = []
   const values: Array<any> = []
   let value = 0
@@ -25,12 +26,18 @@ export const insertRowsSqlQuery = (streams: StreamEvents[], now: () => Date): { 
     for (const {eventType, metadata, payload} of events) {
       let commitedVersion = expectedVersion + 1
       valueRows.push(`($${++value}, $${++value}, $${++value}, $${++value}, $${++value}::jsonb, $${++value}::jsonb, $${++value} at time zone 'utc')`)
-      values.push(streamType, streamId, commitedVersion, eventType, payload, metadata, now())
+      values.push(streamType, streamId, commitedVersion, eventType, payload, metadata, now)
     }
   }
 
   return {
     sql: `INSERT INTO eventstore (stream_type, stream_id, version, event_type, payload, metadata, timestamp) VALUES ${valueRows.join(`, `)}`,
     values
+  }
+}
+
+export const readStreamSqlQuery = (streamId: string, streamType: StreamType): { sql: string } => {
+  return {
+    sql: `SELECT position, stream_type, stream_id, version, event_type, payload, metadata, timestamp at time zone 'utc' as timestamp FROM eventstore WHERE stream_type = '${streamType}' AND stream_id = '${streamId}' ORDER BY position ASC`
   }
 }
