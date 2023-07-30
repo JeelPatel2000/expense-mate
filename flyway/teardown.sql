@@ -1,1 +1,1 @@
-DROP TABLE IF EXIST eventstore;
+DROP TABLE IF EXISTS eventstore;
