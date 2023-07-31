@@ -19,6 +19,7 @@ classDiagram
         +addMember()
         +addSettlement()
     }
+    
     class Expense {
         +ExpenseID : int
         +Description : string
