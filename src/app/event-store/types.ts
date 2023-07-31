@@ -14,10 +14,10 @@ export interface PersistedEventEnvelope<T = any> extends EventEnvelope<T> {
 
 export interface Aggregate {
 	aggregateId: string
-	unpublishedEnvelopes: () => number
+	unpublishedEnvelopes: () => EventEnvelope<any>[]
   commitedVersion: () => number
   uncommitedVersion: () => number
-  load: (envelopes: PersistedEventEnvelope[]) => void
+  load: (envelopes: PersistedEventEnvelope<any>[]) => void
 }
 
 export interface Metadata {
