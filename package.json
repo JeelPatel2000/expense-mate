@@ -4,7 +4,7 @@
   "description": "The ultimate expense tracker for mates",
   "main": "index.js",
   "scripts": {
-    "build": "esbuild src/app.ts --bundle --platform=node --target=node14 --outfile=dist/app.js"
+    "build": "esbuild ./src/app.ts --bundle --platform=node --target=node14 --outfile=dist/app.js"
   },
   "repository": {
     "type": "git",
