@@ -9,17 +9,19 @@ export interface ExpenseCreatedEvent {
 
 export interface ExpenseUpdatedEvent {
   eventType: ExpenseEventType.Updated
-  updatedByUser: string
+  updatedByUserId: string
+  description: string
+  amount: number
 }
 
 export interface ExpenseDeletedEvent {
   eventType: ExpenseEventType.Deleted
-  deletedByUser: string
+  deletedByUserId: string
 }
 
 export interface ExpenseRestoredEvent {
   eventType: ExpenseEventType.Restored
-  restoredByUser: string
+  restoredByUserId: string
 }
 
 export type ExpenseEvent = ExpenseCreatedEvent | ExpenseUpdatedEvent | ExpenseDeletedEvent | ExpenseRestoredEvent
