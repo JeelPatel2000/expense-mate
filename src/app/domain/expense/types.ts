@@ -2,7 +2,7 @@ export interface ExpenseCreatedEvent {
   eventType: ExpenseEventType.Created
   description: string
   amount: number
-  date: Date
+  createdAt: Date
   createdByUserId: string
   belongsToGroupId: string
 }
@@ -12,6 +12,7 @@ export interface ExpenseUpdatedEvent {
   updatedByUserId: string
   description: string
   amount: number
+  updatedAt: Date
 }
 
 export interface ExpenseDeletedEvent {
