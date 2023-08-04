@@ -4,6 +4,9 @@ import { ExpenseEvent, ExpenseEventType } from "./types";
 
 export interface ExpenseAggregate extends Aggregate {
   create: (params: CreateParams) => void
+  update: (params: UpdateParams, metadata?: Metadata) => void
+  deleteExpense: (params: DeleteParams, metadata?: Metadata) => void
+  restore: (params: RestoreParams, metadata?: Metadata) => void
 }
 
 interface CreateParams {
@@ -20,6 +23,7 @@ interface UpdateParams {
   description: string
   amount: number
   updatedByUserId: string
+  updatedAt: Date
 }
 
 interface DeleteParams {
@@ -71,7 +75,7 @@ export const expenseAggregate = (aggregateId: string): ExpenseAggregate => {
       case ExpenseEventType.Created:
         {
           state = State.Created
-          const { amount, belongsToGroupId, createdByUserId, date, description } = event
+          const { amount, belongsToGroupId, createdByUserId, createdAt: date, description } = event
           expense.amount = amount
           expense.belongsToGroupId = belongsToGroupId
           expense.createdByUserId = createdByUserId
@@ -125,13 +129,13 @@ export const expenseAggregate = (aggregateId: string): ExpenseAggregate => {
   const create = (params: CreateParams, metadata?: Metadata) => {
     if(state !== State.None) throw new DomainError(`Expense cannot be created in the current state`)
     const { amount, belongsToGroupId, createdByUserId, date, description, eventType } = params
-    add({ eventType, amount, belongsToGroupId, createdByUserId, date, description })
+    add({ eventType, amount, belongsToGroupId, createdByUserId, createdAt: date, description })
   }
 
   const update = (params: UpdateParams, metadata?: Metadata) => {
     if(state !== State.Created && state !== State.Restored && state !== State.Updated) throw new DomainError(`Expense cannot be in modified in current state`);
-    const { amount, description, eventType, updatedByUserId } = params
-    add({ eventType, amount, description, updatedByUserId })
+    const { amount, description, eventType, updatedByUserId, updatedAt } = params
+    add({ eventType, amount, description, updatedByUserId, updatedAt })
   }
 
   const deleteExpense = (params: DeleteParams, metadata?: Metadata) => {
@@ -149,9 +153,12 @@ export const expenseAggregate = (aggregateId: string): ExpenseAggregate => {
   return {
     aggregateId,
     create,
+    update,
+    deleteExpense,
+    restore,
     commitedVersion: () => commitedVersion,
     uncommitedVersion: () => uncommitedVersion,
     unpublishedEnvelopes: () => unpublishedEnvelopes,
-    load: load
+    load,
   }
 }
