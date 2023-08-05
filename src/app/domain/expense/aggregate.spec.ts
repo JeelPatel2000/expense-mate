@@ -73,8 +73,17 @@ describe(`Expense aggregate tests`, () => {
     aggregate.load(persistedEventEnvelopes)
     aggregate.update(expenseUpdatedEvent)
     expect(aggregate.unpublishedEnvelopes().length).toBe(1);
-    expect(aggregate.unpublishedEnvelopes()).toEqual([
+    expect(aggregate.unpublishedEnvelopes()).toStrictEqual([
       { eventType: ExpenseEventType.Updated, metadata: {}, payload: { amount: 200, description: `grocery expense`, eventType: `Updated`, updatedAt: now, updatedByUserId: `user-002` }}
+    ]);
+  })
+
+  test(`given an expense aggregate > when expense create > raises expense created event`, () => {
+    const aggregate = expenseAggregate(`expense-001`)
+    aggregate.create(expenseCreatedEvent);
+    expect(aggregate.uncommitedVersion()).toBe(1);
+    expect(aggregate.unpublishedEnvelopes()).toStrictEqual([
+      { eventType: ExpenseEventType.Created, metadata: {}, payload: { amount: 100, description: `grocery expense`, eventType: `Created`, createdAt: now, createdByUserId: `user-001`, belongsToGroupId: `group-001` }}
     ]);
   })
 })

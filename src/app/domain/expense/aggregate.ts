@@ -13,7 +13,7 @@ interface CreateParams {
   eventType: ExpenseEventType.Created
   description: string
   amount: number
-  date: Date
+  createdAt: Date
   createdByUserId: string
   belongsToGroupId: string
 }
@@ -128,8 +128,8 @@ export const expenseAggregate = (aggregateId: string): ExpenseAggregate => {
 
   const create = (params: CreateParams, metadata?: Metadata) => {
     if(state !== State.None) throw new DomainError(`Expense cannot be created in the current state`)
-    const { amount, belongsToGroupId, createdByUserId, date, description, eventType } = params
-    add({ eventType, amount, belongsToGroupId, createdByUserId, createdAt: date, description })
+    const { amount, belongsToGroupId, createdByUserId, createdAt, description, eventType } = params
+    add({ eventType, amount, belongsToGroupId, createdByUserId, createdAt, description })
   }
 
   const update = (params: UpdateParams, metadata?: Metadata) => {
