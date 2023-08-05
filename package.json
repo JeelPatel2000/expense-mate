@@ -4,7 +4,8 @@
   "description": "The ultimate expense tracker for mates",
   "main": "index.js",
   "scripts": {
-    "build": "node esbuild.config.js"
+    "build": "node esbuild.config.js",
+    "test": "jest"
   },
   "repository": {
     "type": "git",
