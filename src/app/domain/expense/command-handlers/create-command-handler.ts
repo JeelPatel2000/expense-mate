@@ -1,4 +1,3 @@
-import { EventStore } from "../../../event-store/event-store"
 import { ExpenseRepository } from "../repository"
 import { ExpenseEventType } from "../types"
 
