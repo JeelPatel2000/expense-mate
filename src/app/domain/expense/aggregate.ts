@@ -10,16 +10,14 @@ export interface ExpenseAggregate extends Aggregate {
 }
 
 interface CreateParams {
-  eventType: ExpenseEventType.Created
   description: string
   amount: number
-  date: Date
+  createdAt: Date
   createdByUserId: string
   belongsToGroupId: string
 }
 
 interface UpdateParams {
-  eventType: ExpenseEventType.Updated
   description: string
   amount: number
   updatedByUserId: string
@@ -27,13 +25,13 @@ interface UpdateParams {
 }
 
 interface DeleteParams {
-  eventType: ExpenseEventType.Deleted
   deletedByUserId: string
+  deletedAt: Date
 }
 
 interface RestoreParams {
-  eventType: ExpenseEventType.Restored
   restoredByUserId: string
+  restoredAt: Date
 }
 
 interface Expense {
@@ -128,26 +126,26 @@ export const expenseAggregate = (aggregateId: string): ExpenseAggregate => {
 
   const create = (params: CreateParams, metadata?: Metadata) => {
     if(state !== State.None) throw new DomainError(`Expense cannot be created in the current state`)
-    const { amount, belongsToGroupId, createdByUserId, date, description, eventType } = params
-    add({ eventType, amount, belongsToGroupId, createdByUserId, createdAt: date, description })
+    const { amount, belongsToGroupId, createdByUserId, createdAt, description } = params
+    add({ eventType: ExpenseEventType.Created, amount, belongsToGroupId, createdByUserId, createdAt, description }, metadata)
   }
 
   const update = (params: UpdateParams, metadata?: Metadata) => {
     if(state !== State.Created && state !== State.Restored && state !== State.Updated) throw new DomainError(`Expense cannot be in modified in current state`);
-    const { amount, description, eventType, updatedByUserId, updatedAt } = params
-    add({ eventType, amount, description, updatedByUserId, updatedAt })
+    const { amount, description, updatedByUserId, updatedAt } = params
+    add({ eventType: ExpenseEventType.Updated, amount, description, updatedByUserId, updatedAt }, metadata)
   }
 
   const deleteExpense = (params: DeleteParams, metadata?: Metadata) => {
     if(state !== State.Created && state !== State.Restored && state !== State.Updated) throw new DomainError(`Expense cannot be in modified in current state`);
-    const { eventType, deletedByUserId } = params
-    add({ eventType, deletedByUserId })
+    const { deletedByUserId, deletedAt } = params
+    add({ eventType: ExpenseEventType.Deleted, deletedByUserId, deletedAt }, metadata)
   }
 
   const restore = (params: RestoreParams, metadata?: Metadata) => {
     if(state !== State.Deleted) throw new DomainError(`Expense cannot be restored from current state`)
-    const { eventType, restoredByUserId } = params
-    add({ eventType, restoredByUserId });
+    const { restoredByUserId, restoredAt } = params
+    add({ eventType: ExpenseEventType.Restored, restoredByUserId, restoredAt }, metadata);
   }
 
   return {
