@@ -72,7 +72,7 @@ describe(`Expense aggregate tests`, () => {
     ]
     aggregate.load(persistedEventEnvelopes)
     aggregate.update(expenseUpdatedEvent)
-    expect(aggregate.unpublishedEnvelopes().length).toBe(2);
+    expect(aggregate.unpublishedEnvelopes().length).toBe(1);
     expect(aggregate.unpublishedEnvelopes()).toStrictEqual([
       { eventType: ExpenseEventType.Updated, metadata: {}, payload: { amount: 200, description: `grocery expense`, eventType: `Updated`, updatedAt: now, updatedByUserId: `user-002` }}
     ]);
