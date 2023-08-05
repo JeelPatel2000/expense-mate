@@ -1,12 +1,8 @@
-# setup github workflow to run jest tests on pull requests.
-# https://docs.github.com/en/actions/guides/building-and-testing-nodejs
-# https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions
-
 name: Tests
 
 on:
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   build:
@@ -14,7 +10,25 @@ jobs:
 
     env:
       node-version: 18.x
-    
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: expense_mate
+
+    services:
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_USER: ${{ env.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
+          POSTGRES_DB: ${{ env.POSTGRES_DB }}
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - uses: actions/checkout@v3
       - name: Use Node.js ${{ env.node-version }}
@@ -23,6 +37,13 @@ jobs:
           node-version: ${{ env.node-version }}
       - run: npm install
       - run: npm run build --if-present
+      - name: Wait for Postgres to be ready
+        run: sleep 10s # Adjust the wait time if needed
       - run: npm test
         env:
           CI: true
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
+          POSTGRES_USER: ${{ env.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
+          POSTGRES_DB: ${{ env.POSTGRES_DB }}
