@@ -5,7 +5,14 @@
   "main": "index.js",
   "scripts": {
     "build": "node esbuild.config.js",
-    "test": "jest"
+    "test": "jest",
+    "start": "npm run build && node ./dist/main.js",
+    "dev": "nodemon --watch src"
+  },
+  "nodemonConfig": {
+    "watch": ["src"],
+    "ext": "ts,json",
+    "exec": "npm run start"
   },
   "repository": {
     "type": "git",
@@ -36,7 +43,10 @@
     "ts-node": "^10.9.1"
   },
   "dependencies": {
+    "@types/uuid": "^9.0.2",
     "express": "^4.18.2",
-    "pg": "^8.11.1"
+    "pg": "^8.11.1",
+    "uuid": "^9.0.0",
+    "zod": "^3.21.4"
   }
 }
