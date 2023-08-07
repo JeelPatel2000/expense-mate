@@ -5,7 +5,7 @@ import { ExpenseEvent } from "./types"
 
 export interface ExpenseRepository {
   save: (aggregate: ExpenseAggregate) => Promise<void>
-  load: (expenseId: string) => Promise<ExpenseAggregate>
+  load: (aggregateId: string) => Promise<ExpenseAggregate>
 }
 
 export const expenseRepository = (eventStore: EventStore): ExpenseRepository => {
@@ -13,9 +13,9 @@ export const expenseRepository = (eventStore: EventStore): ExpenseRepository => 
     await eventStore.append(StreamType.Expense, aggregate.aggregateId, aggregate.commitedVersion(), aggregate.unpublishedEnvelopes())
   }
 
-  const load = async (expenseId: string) => {
-    const events = await eventStore.readStream<ExpenseEvent>(expenseId, StreamType.Expense);
-    const expenseAggegate = expenseAggregate(expenseId)
+  const load = async (aggregateId: string) => {
+    const events = await eventStore.readStream<ExpenseEvent>(aggregateId, StreamType.Expense);
+    const expenseAggegate = expenseAggregate(aggregateId)
     expenseAggegate.load(events)
     return expenseAggegate
   }
